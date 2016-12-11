@@ -52,7 +52,6 @@ public class MealPlannerClassifier {
     }
     
     public String classify(String[] args) throws JessException{
-        System.out.println("HAAAI");
         String result = new String();
         Fact f = new Fact("meals", rete);
         Iterator it = rete.listDeftemplates();
@@ -60,7 +59,6 @@ public class MealPlannerClassifier {
         rete.eval("rules");
         rete.eval("facts");
         Deftemplate template = (Deftemplate) it.next();
-        System.out.println(template);
         if(!"MAIN::meals".equals(template.getName())){
             while (it.hasNext()) {
                 template = (Deftemplate) it.next();
@@ -68,7 +66,6 @@ public class MealPlannerClassifier {
                     break;
             }
         }
-        System.out.println("DONE");
         
         for(int i=0; i<args.length; i++){
             if(!args[i].equals("None"))
@@ -84,7 +81,6 @@ public class MealPlannerClassifier {
             if ("MAIN::breakfast".equals(fact.getName()))
                result = fact.getSlotValue("menu").toString();
         }
-        System.out.println(result);
         return result;
     }
     
