@@ -21,9 +21,10 @@ public class MealPlannerClassifier {
     private Rete rete;
     private Context context;
     
-    public MealPlannerClassifier(){
+    public MealPlannerClassifier() throws JessException, IOException{
         rete = new Rete();
         context = rete.getGlobalContext();
+        generateRules();
     }
     
     public void generateRules() throws FileNotFoundException, JessException, IOException{
@@ -41,7 +42,6 @@ public class MealPlannerClassifier {
                  }
                 if(result instanceof Deftemplate){
                     Deftemplate template = (Deftemplate) result;
-                    System.out.println(template.toString());
                     rete.addDeftemplate(template);
                 }
               
@@ -52,21 +52,40 @@ public class MealPlannerClassifier {
     }
     
     public String classify(String[] args) throws JessException{
+        System.out.println("HAAAI");
         String result = new String();
         Fact f = new Fact("meals", rete);
+        Iterator it = rete.listDeftemplates();
+               
+        rete.eval("rules");
+        rete.eval("facts");
+        Deftemplate template = (Deftemplate) it.next();
+        System.out.println(template);
+        if(!"MAIN::meals".equals(template.getName())){
+            while (it.hasNext()) {
+                template = (Deftemplate) it.next();
+                if("MAIN::meals".equals(template.getName()))
+                    break;
+            }
+        }
+        System.out.println("DONE");
+        
         for(int i=0; i<args.length; i++){
-            f.setSlotValue("hungry", new Value(args[i], RU.STRING));
+            if(!args[i].equals("None"))
+                f.setSlotValue(template.getSlotName(i), new Value(args[i].toLowerCase(), RU.STRING));
         }
         
+        rete.assertFact(f);
         rete.eval("(run)");
         
-        Iterator it = rete.listFacts();
+        it = rete.listFacts();
         while (it.hasNext()) {
             Fact fact = (Fact) it.next();
             if ("MAIN::breakfast".equals(fact.getName()))
                result = fact.getSlotValue("menu").toString();
-       }
-       return result;
+        }
+        System.out.println(result);
+        return result;
     }
     
 }
