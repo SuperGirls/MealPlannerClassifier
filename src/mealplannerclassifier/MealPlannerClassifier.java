@@ -28,7 +28,7 @@ public class MealPlannerClassifier {
     }
     
     public void generateRules() throws FileNotFoundException, JessException, IOException{
-        FileReader file = new FileReader("rules/rule.clp");
+        FileReader file = new FileReader("rules/mealplanner.clp");
              
         try {
             //Parse file and add rules
@@ -78,8 +78,8 @@ public class MealPlannerClassifier {
         it = rete.listFacts();
         while (it.hasNext()) {
             Fact fact = (Fact) it.next();
-            if ("MAIN::breakfast".equals(fact.getName()))
-               result = fact.getSlotValue("menu").toString();
+            if ("MAIN::result_choice".equals(fact.getName()))
+               result = fact.getSlotValue("val").toString();
         }
         return result;
     }

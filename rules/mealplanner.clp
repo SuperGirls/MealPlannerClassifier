@@ -6,48 +6,48 @@
 (deftemplate result_choice (slot val))
 
 (defrule rule1
-	(meals(blood_type "A"))
+	(meals(blood_type "a"))
 	=>
     (assert(animal_product(value "no"))))
 
 (defrule rule2
-	(meals(blood_type "B"))
+	(meals(blood_type "b"))
 	=>
     (assert(animal_product(value "yes")))
     (assert(protein(value "veg" "seafood"))))
 
 (defrule rule3
-	(meals(blood_type "B"))
+	(meals(blood_type "b"))
 	(meals(heart_disease "no"))
 	=>
 	(assert(dairy_product(value "normal"))))
 
 (defrule rule4
-	(meals(blood_type "B"))
+	(meals(blood_type "b"))
 	(meals(heart_disease "yes"))
 	=>
 	(assert(dairy_product(value "no"))))
 
 (defrule rule5
-	(meals(blood_type "AB"))
+	(meals(blood_type "ab"))
 	=>
 	(assert(animal_product(value "yes")))
     (assert(protein(value "animal" "veg" "seafood"))))
 
 (defrule rule6
-	(meals(blood_type "AB"))
+	(meals(blood_type "ab"))
 	(meals(heart_disease "no"))
 	=>
 	(assert(dairy_product(value "high"))))
 
 (defrule rule7
-	(meals(blood_type "AB"))
+	(meals(blood_type "ab"))
 	(meals(heart_disease "yes"))
 	=>
 	(assert(dairy_product(value "no"))))
 
 (defrule rule8
-	(meals(blood_type "O"))
+	(meals(blood_type "o"))
 	=>
 	(assert(animal_product(value "yes")))
     (assert(dairy_product(value "no")))
