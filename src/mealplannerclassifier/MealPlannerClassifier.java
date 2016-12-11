@@ -13,28 +13,25 @@ package mealplannerclassifier;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Iterator;
 import jess.*;
 import java.util.Scanner;
 public class MealPlannerClassifier {
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws FileNotFoundException, JessException, IOException {
-        Scanner scanner = new Scanner(System.in);
-        String input;
-        
-        System.out.println("---- Welcome To Meal Planner Classifier ----");
-        Rete engine = new Rete();
-
+    private Rete rete;
+    private Context context;
+    
+    public MealPlannerClassifier(){
+        rete = new Rete();
+        context = rete.getGlobalContext();
+    }
+    
+    public void generateRules() throws FileNotFoundException, JessException, IOException{
         FileReader file = new FileReader("rules/rule.clp");
-        Context context = engine.getGlobalContext();
-        
-        Rete rete = new Rete();
-        
+             
         try {
             //Parse file and add rules
-            Jesp parser = new Jesp(file, engine);
+            Jesp parser = new Jesp(file, rete);
             Object result = Funcall.TRUE;
             while (!result.equals(Funcall.EOF)) {
                 result = parser.parseExpression(context, false);
@@ -49,56 +46,27 @@ public class MealPlannerClassifier {
                 }
               
             }
-            
-            Fact f = new Fact("meals", rete);
-            
-            System.out.println("Hungry? yes/no");
-            input= scanner.nextLine();
-            if(!input.equals(""))
-                f.setSlotValue("hungry", new Value(input, RU.STRING));
-            
-            System.out.println("Hurry? yes/no");
-            input= scanner.nextLine();
-            if(!input.equals(""))
-                f.setSlotValue("hurry", new Value(input, RU.STRING));
-            
-            System.out.println("Temperature? hot/cold");
-            input= scanner.nextLine();
-            if(!input.equals(""))
-                f.setSlotValue("temperature", new Value(input, RU.STRING));
-            
-            System.out.println("Allergy Chicken? yes/no");
-            input= scanner.nextLine();
-            if(!input.equals(""))
-                f.setSlotValue("allergy_chicken", new Value(input, RU.STRING));
-            
-            System.out.println("Allergy Egg? yes/no");
-            input= scanner.nextLine();
-            if(!input.equals(""))
-                f.setSlotValue("allergy_egg", new Value(input, RU.STRING));
-            
-            System.out.println("Allergy Dairy? yes/no");
-            input= scanner.nextLine();
-            if(!input.equals(""))
-                f.setSlotValue("allergy_dairy", new Value(input, RU.STRING));
-            
-            System.out.println("Diabetes? yes/no");
-            input= scanner.nextLine();
-            if(!input.equals(""))
-                f.setSlotValue("diabetes", new Value(input, RU.STRING));
-            
-            rete.assertFact(f);
-            
-            rete.eval("(rules)");
-            System.out.println();
-            rete.eval("(facts)");
-            System.out.println();
-            rete.eval("(run)");
-            
         } finally {
           file.close();
         }
-
+    }
+    
+    public String classify(String[] args) throws JessException{
+        String result = new String();
+        Fact f = new Fact("meals", rete);
+        for(int i=0; i<args.length; i++){
+            f.setSlotValue("hungry", new Value(args[i], RU.STRING));
+        }
+        
+        rete.eval("(run)");
+        
+        Iterator it = rete.listFacts();
+        while (it.hasNext()) {
+            Fact fact = (Fact) it.next();
+            if ("MAIN::breakfast".equals(fact.getName()))
+               result = fact.getSlotValue("menu").toString();
+       }
+       return result;
     }
     
 }
