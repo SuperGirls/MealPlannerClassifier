@@ -1,330 +1,104 @@
-\
-;;;======================================================
-;;;   Sticks Program
-;;;
-;;;     This program was introduced in Chapter 9.
-;;;
-;;;     CLIPS Version 6.0 Example
-;;;
-;;;     To execute, merely load, reset and run.
-;;;======================================================
+(deftemplate meals (slot hungry) (slot hurry) (slot temperature) (slot allergy_chicken) (slot allergy_egg) (slot allergy_dairy) (slot diabetes))
 
-; **************
-; FACT TEMPLATES
-; **************
+(defrule rule1
+	(meals(blood_type "A"))
+	=>
+        (meals(animal_product "no"))
 
-; The phase fact indicates the current action to be
-; undertaken before the game can begin
+(defrule rule2
+	(meals(blood_type "B"))
+	=>
+        (meals(animal_product "yes"))
+        (meals(protein_product ["veg", "seafood"]))
 
-; (phase 
-;    <action>)      ; Either choose-player or 
-                    ; select-pile-size
+(defrule rule3
+	(meals(blood_type "B"))
+	(meals(heart_disease "no"))
+	=>
+	(meals(dairy_product "normal"))
 
-; The player-select fact contains the human's response to 
-; the "Who moves first?" question.
+(defrule rule4
+	(meals(blood_type "B"))
+	(meals(heart_disease "yes"))
+	=>
+	(meals(dairy_product "no"))
 
-; (player-select
-;    <choice>)      ; Valid responses are c (for computer)
-                    ; and h (for human).
-    
-; The pile-select fact contains the human's response to 
-; the "How many sticks in the pile?" question.
+(defrule rule5
+	(meals(blood_type "AB"))
+	=>
+	(meals(animal_product "yes"))
+        (meals(protein ["animal", "veg", "seafood"]))
 
-; (pile-select
-;    <choice>)      ; Valid responses are integers 
-                    ; greater than zero.
+(defrule rule6
+	(meals(blood_type "AB"))
+	(meals(heart_disease "no"))
+	=>
+	(meals(dairy_product "high"))
 
-; The pile-size fact contains the current number 
-; of sticks in the stack.
+(defrule rule7
+	(meals(blood_type "AB"))
+	(meals(heart_disease "yes"))
+	=>
+	(meals(dairy_product "no"))
 
-; (pile-size
-;    <sticks>)      ; An integer greater than zero.
+(defrule rule8
+	(meals(blood_type "O"))
+	=>
+	(meals(animal_product "yes"))
+        (meals(dairy_product "no"))
+        (meals(protein ["veg, seafood"]))
 
-; The player-move fact indicates whose turn it is.
+(defrule rule9
+	(meals(animal_product "no"))
+	=>
+        (meals(dairy_product "no"))
+        (meals(protein ["veg"]))
 
-; (player-move
-;    <player)       ; Either c (for computer) 
-                    ; or h (for human).
+(defrule ruleMenu1
+	(meals(animal_product "no"))
+	(meals(dairy_product "no"))
+	(meals(protein ["veg"]))
+	=>
+	(assert(result_choice menu_1))
 
-; The human-takes fact contains the human's response to 
-; the "How many sticks do you wish to take?" question.
+(defrule ruleMenu2
+	(meals(dairy_product "high"))
+	=>
+	(assert(result_choice menu_2))
 
+(defrule ruleMenu3
+	(meals(dairy_product "no"))
+	(meals(protein ["animal", "veg", "seafood"]))
+	=>
+	(assert(result_choice menu_3))
 
-; (human-takes
-;    <choice>)      ; Valid responses are 1, 2, and 3.
+(defrule ruleMenu4
+	(meals(dairy_product "no"))
+	(meals(protein ["veg", "seafood"]))
+        (meals(activity "high"))
+        (meals(kidney_disease "yes"))
+	=>
+	(assert(result_choice menu_4))
 
-; The take-sticks facts indicate how many sticks the 
-; computer should take based on the remainder when the 
-; stack size is divided by 4.
+(defrule ruleMenu5
+	(meals(dairy_product "no"))
+	(meals(protein ["veg", "seafood"]))
+        (meals(activity "no"))
+        (meals(kidney_disease "no"))
+	=>
+	(assert(result_choice menu_5))
 
-(deftemplate take-sticks
-   (slot how-many)         ; Number of sticks to take.
-   (slot for-remainder))   ; Remainder when stack is
-                           ; divided by 4.
+(defrule ruleMenu6
+	(meals(dairy_product "no"))
+	(meals(protein ["veg", "seafood"]))
+        (meals(activity "normal"))
+	=>
+	(assert(result_choice menu_6))
 
-; ********
-; DEFFACTS 
-; ********
-
-(deffacts initial-phase
-   (phase choose-player))
-
-(deffacts take-sticks-information
-   (take-sticks (how-many 1) (for-remainder 1))
-   (take-sticks (how-many 1) (for-remainder 2))
-   (take-sticks (how-many 2) (for-remainder 3))
-   (take-sticks (how-many 3) (for-remainder 0)))
-
-; ********
-; DEFFUNCTIONS
-; ********
-
-(deffunction ask-start-again ()
-  (printout t "Play again? (y/n) ")
-  (if (eq (read) y) then
-    (assert (phase choose-player))))
-   
-; *****
-; RULES 
-; *****
-
-; RULE player-select
-; IF
-;   The phase is to choose the first player
-; THEN
-;   Ask who should move first, and
-;   Get the human's response
-
-(defrule player-select
-   (phase choose-player)
-   =>
-   (printout t "Who moves first (Computer: c "
-               "Human: h)? ")
-   (assert (player-select (read))))
-
-; RULE good-player-choice
-; IF
-;   The phase is to choose the first player, and
-;   The human has given a valid response
-; THEN
-;   Remove unneeded information, and 
-;   Indicate whose turn it is, and
-;   Indicate that the pile size should be chosen
-
-(defrule good-player-choice
-   ?phase <- (phase choose-player)
-   ?choice <- (player-select ?player&:(or (eq ?player c) (eq ?player h)))
-   =>
-   (retract ?phase ?choice)
-   (assert (player-move ?player))
-   (assert (phase select-pile-size)))
-
-; RULE bad-player-choice
-; IF
-;   The phase is to choose the first player, and
-;   The human has given a invalid response
-; THEN
-;   Remove unneeded information, and 
-;   Indicate that the first player should be chosen again, 
-;   and Print the valid choices
-
-(defrule bad-player-choice 
-   ?phase <- (phase choose-player)
-   ?choice <- (player-select ?player&~c&~h)
-   =>
-   (retract ?phase ?choice)
-   (assert (phase choose-player))
-   (printout t "Choose c or h." crlf))
-
-; RULE pile-select
-; IF
-;   The phase is to choose the pile size
-; THEN
-;   Ask what the pile size should be, and
-;   Get the human's response
-
-
-(defrule pile-select 
-   (phase select-pile-size)
-   =>
-   (printout t "How many sticks in the pile? ")
-   (assert (pile-select (read))))
-
-; RULE good-pile-choice
-; IF
-;   The phase is to choose the pile size, and
-;   The human has given a valid response
-; THEN
-;   Remove unneeded information, and 
-;   Store the pile size
-
-(defrule good-pile-choice
-   ?phase <- (phase select-pile-size)
-   ?choice <- (pile-select ?size&:(integerp ?size)
-                                &:(> ?size 0))
-   =>
-   (retract ?phase ?choice)
-   (assert (pile-size ?size)))
-
-; RULE bad-pile-choice
-; IF
-;   The phase is to choose the pile size, and
-;   The human has given a invalid response
-; THEN
-;   Remove unneeded information, and 
-;   Indicate that the pile size should be chosen again, 
-;   and Print the valid choices
-
-(defrule bad-pile-choice
-   ?phase <- (phase select-pile-size)
-   ?choice <- (pile-select ?size&:(or (not (integerp ?size))
-                                      (<= ?size 0)))
-   =>
-   (retract ?phase ?choice)
-   (assert (phase select-pile-size))
-   (printout t "Choose an integer greater than zero."
-               crlf))
-
-
-
-
-; RULE computer-loses
-; IF
-;   The pile size is 1, and
-;   It is the computer's move
-; THEN
-;   Print that the computer has lost the game
-
-(defrule computer-loses
-  ?pile <- (pile-size 1)
-  ?move <- (player-move c)
-   =>
-   (printout t "Computer must take the last stick!" crlf)
-   (printout t "I lose!" crlf)
-   (retract ?pile)
-   (retract ?move)
-   (ask-start-again))
-
-; RULE human-loses
-; IF
-;   The pile size is 1, and
-;   It is the human's move
-; THEN
-;   Print that the human has lost the game
-
-(defrule human-loses
-  ?pile <- (pile-size 1)
-  ?move <- (player-move h)
-   =>
-   (printout t "You must take the last stick!" crlf)
-   (printout t "You lose!" crlf)
-   (retract ?pile)
-   (retract ?move)
-   (ask-start-again))
-
-; RULE get-human-move
-; IF
-;   The pile size is greater than 1, and
-;   It is the human's move
-; THEN
-;   Ask how many sticks to take, and
-;   Get the human's response
-
-(defrule get-human-move
-   (pile-size ?size&:(> ?size 1))
-   (player-move h)
-   =>
-   (printout t "How many sticks do you wish to take? ")
-   (assert (human-takes (read))))
-
-
-; RULE good-human-move
-; IF
-;   There is a pile of sticks, and
-;   The human has chosen how many sticks to take, and
-;   It is the human's move, and
-;   The human's choice is valid
-; THEN
-;   Remove unneeded information, and 
-;   Compute the new pile size, and
-;   Update the pile size, and
-;   Print the number of sticks left in the stack, and
-;   Trigger the computer player's turn
-
-(defrule good-human-move
-   ?pile <- (pile-size ?size)
-   ?move <- (human-takes ?choice)
-   ?whose-turn <- (player-move h)
-   (test (and (integerp ?choice)
-              (>= ?choice 1) 
-              (<= ?choice 3)
-              (< ?choice ?size)))
-   =>
-   (retract ?pile ?move ?whose-turn)
-   (bind ?new-size (- ?size ?choice))
-   (assert (pile-size ?new-size))
-   (printout t ?new-size " stick(s) left in the pile."
-               crlf)
-   (assert (player-move c)))
-
-; RULE bad-human-move
-; IF
-;   There is a pile of sticks, and
-;   The human has chosen how many sticks to take, and
-;   It is the human's move, and
-;   The human's choice is invalid
-; THEN
-;   Print the valid choices, and
-;   Remove unneeded information, and
-;   Retrigger the human player's move
-
-
-
-
-
-(defrule bad-human-move
-   (pile-size ?size)
-   ?move <- (human-takes ?choice)
-   ?whose-turn <- (player-move h)
-   (test (or (not (integerp ?choice)) 
-             (< ?choice 1) 
-             (> ?choice 3)
-             (>= ?choice ?size)))
-   =>
-   (printout t "Number of sticks must be between 1 and 3,"
-               crlf
-               "and you must be forced to take the last "
-               "stick." crlf)
-   (retract ?move ?whose-turn)
-   (assert (player-move h)))
-
-; RULE computer-move
-; IF
-;   It is the computers's move, and
-;   The pile size is greater than 1, and
-;   The computer's response is available
-; THEN
-;   Remove unneeded information, and
-;   Compute the new pile size, and
-;   Print the number of sticks left in the stack, and
-;   Update the pile size, and
-;   Trigger the human players move
-
-(defrule computer-move
-   ?whose-turn <- (player-move c)
-   ?pile <- (pile-size ?size&:(> ?size 1))
-   (take-sticks (how-many ?number)
-                (for-remainder ?X&:(= ?X (mod ?size 4))))
-   =>
-   (retract ?whose-turn ?pile)
-   (bind ?new-size (- ?size ?number))
-   (printout t "Computer takes " ?number " stick(s)."
-               crlf)
-   (printout t ?new-size " stick(s) left in the pile."
-               crlf)
-   (assert (pile-size ?new-size))
-   (assert (player-move h)))
-
-
+(defrule ruleMenu7
+	(meals(dairy_product "no"))
+	(meals(dairy_product "normal"))
+	=>
+	(assert(result_choice menu_7))
+	
 (reset)
-(run)
