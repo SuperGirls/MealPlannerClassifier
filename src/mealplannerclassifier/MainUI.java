@@ -459,10 +459,8 @@ public class MainUI extends javax.swing.JFrame {
                 args[4] = "obese";
             }
         } else {
-            args[4] = "normal";
-        }
-        System.out.println(args[4]);
-          
+            args[4] = "ideal";
+        } 
         try {
             String result = mealplanner.classify(args);
             
