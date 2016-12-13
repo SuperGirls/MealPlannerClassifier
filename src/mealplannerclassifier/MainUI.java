@@ -495,6 +495,8 @@ public class MainUI extends javax.swing.JFrame {
     private void button2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button2ActionPerformed
         jPanel3.setVisible(false);
         jPanel2.setVisible(true);
+        jLabel21.setText("");
+        
     }//GEN-LAST:event_button2ActionPerformed
 
     /**

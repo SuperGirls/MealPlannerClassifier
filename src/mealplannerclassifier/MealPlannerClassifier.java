@@ -91,6 +91,7 @@ public class MealPlannerClassifier {
             if ("MAIN::result_choice".equals(fact.getName()))
                result = fact.getSlotValue("val").toString();
         }
+        rete.eval("(reset)");
         return result;
     }  
 }
