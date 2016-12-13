@@ -450,7 +450,7 @@ public class MainUI extends javax.swing.JFrame {
             if(pbmi <= 18.5){
                 args[4] = "slim";
             } else if(pbmi > 18.5 && pbmi <= 25){
-                args[4] = "normal";
+                args[4] = "ideal";
             } else if(pbmi > 25 && pbmi <= 30){
                 args[4] = "fat";
             } else if(pbmi > 30){
